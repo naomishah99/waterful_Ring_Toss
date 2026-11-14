@@ -33,6 +33,7 @@ export function createTilt() {
     source: 'none', // 'sensor' | 'keys' | 'none'
     angle: 0, // current tilt in radians (+ = right side down)
     amount: 1, // multiplier from the tuning panel
+    limit: Math.PI / 6, // most "down" can lean either way (radians), from the tuning panel
   };
   let smooth = null; // smoothed gravity vector, screen coords (y down)
   let reference = null; // gravity angle counted as level
@@ -118,9 +119,11 @@ export function createTilt() {
       state.angle += (keyTarget - state.angle) * step;
     },
 
-    // Unit vector for "down" in the game, after the tuning multiplier
+    // Unit vector for "down" in the game, after the tuning multiplier. Capped
+    // so even a phone turned upside down only slides rings sideways; it never
+    // lifts them (only the jets and shaking should do that).
     down() {
-      const a = state.angle * state.amount;
+      const a = Math.max(-state.limit, Math.min(state.limit, state.angle * state.amount));
       return { x: Math.sin(a), y: Math.cos(a) };
     },
 

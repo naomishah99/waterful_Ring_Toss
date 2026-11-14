@@ -53,24 +53,25 @@ export const PEGS = {
 // These are the starting values; the tuning panel can change them live.
 export const WATER_DEFAULTS = {
   gravity: 0.28, // pull downward (same as normal air gravity)
-  buoyancy: 0.6, // fraction of gravity the water cancels out (1 = floats in place)
-  linearDrag: 0.08, // slows everything a little each step: sets the slow sinking speed
+  buoyancy: 0.4, // fraction of gravity the water cancels out (1 = floats in place)
+  linearDrag: 0.07, // slows everything a little each step: sets the slow sinking speed
   quadraticDrag: 0.008, // slows fast things a lot more: tames hard jets and shakes
   angularDrag: 0.06, // slows spinning
   flatten: 0.004, // tendency of a moving ring to turn flat-side-down, like a falling coin
   wobble: 0.0015, // small random turning, so rings flutter as they sink
   // Jets and currents (Step 4)
-  jetSpeed: 22, // water speed right at a nozzle during a full pump stroke
+  jetSpeed: 30, // water speed right at a nozzle during a full pump stroke
   jetReach: 380, // how far up the jet reaches
   jetSpread: 28, // half-width of the jet cone, in degrees
-  currentDecay: 0.025, // how quickly stirred-up water calms down
+  currentDecay: 0.04, // how quickly stirred-up water calms down
   currentSpread: 0.1, // how much moving water drags its neighbours along
   tumble: 0.02, // how much uneven currents spin a ring
   // Tilt (Step 5)
   tiltAmount: 1, // 1 = real tilt; higher exaggerates it, 0 turns it off
+  tiltLimit: 30, // most the rings' "down" can lean, in degrees, so tilting slides rings sideways but never lifts them
   // Shake (Step 6)
-  shakeStrength: 8, // how hard a shake pushes the water
-  shakeSwirl: 4, // how much a shake stirs up random swirls
+  shakeStrength: 11, // how hard a shake pushes the water
+  shakeSwirl: 5, // how much a shake stirs up random swirls
 };
 
 // Water jet nozzles on the tank floor, and the pump that drives each one.

@@ -1,4 +1,4 @@
-// Step 7: game rules (rings start on the floor, timer, presses, win, restart).
+// Step 8: tuning. Game rules from Step 7; debug tools only with ?debug in the URL.
 import Matter from 'matter-js';
 import { RING } from './config.js';
 import { createView } from './view.js';
@@ -47,14 +47,19 @@ function newRound(mode) {
   hud.hideWin();
 }
 
+// Dragging/poking rings is a testing tool only: it isn't offered in the real
+// game. Add ?debug to the URL to get the toggle.
+const debugAllowed = new URLSearchParams(location.search).has('debug');
 const tuning = createTuningPanel({
-  'Drop rings from top': () => newRound('scatter'),
   'Re-level': () => tilt.relevel(),
-  'Debug: off': (e) => {
-    debugInput.enabled = !debugInput.enabled;
-    e.currentTarget.textContent = `Debug: ${debugInput.enabled ? 'on' : 'off'}`;
-    status.classList.toggle('debug-on', debugInput.enabled);
-  },
+  ...(debugAllowed && {
+    'Drop rings from top': () => newRound('scatter'),
+    'Debug: off': (e) => {
+      debugInput.enabled = !debugInput.enabled;
+      e.currentTarget.textContent = `Debug: ${debugInput.enabled ? 'on' : 'off'}`;
+      status.classList.toggle('debug-on', debugInput.enabled);
+    },
+  }),
 });
 
 showStartScreen(async () => {
@@ -65,6 +70,7 @@ showStartScreen(async () => {
 startLoop({
   update(dt) {
     tilt.state.amount = tuning.tiltAmount;
+    tilt.state.limit = (tuning.tiltLimit * Math.PI) / 180;
     tilt.update(dt / 1000);
     jets.update(dt / 1000);
     const jolt = shake.take();

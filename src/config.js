@@ -36,6 +36,19 @@ export const RING = {
   colors: ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff924c', '#f15bb5', '#00f5d4'],
 };
 
+// Pegs stick up in the middle of the tank (in the toy they're fixed to the back
+// wall). Each has a wider "stopper" at its base that threaded rings rest on.
+// A ring's open middle is 18 units wide, so a 8-unit peg fits through easily
+// but the 34-unit stopper doesn't.
+export const PEGS = {
+  positions: [{ x: 120 }, { x: 240 }],
+  tipY: 230, // top of the peg
+  baseY: 300, // top of the stopper
+  width: 8,
+  stopperWidth: 34,
+  stopperHeight: 6,
+};
+
 // Water behaviour. Speeds are in world units per physics step (1/60 s).
 // These are the starting values; the tuning panel can change them live.
 export const WATER_DEFAULTS = {
@@ -47,3 +60,7 @@ export const WATER_DEFAULTS = {
   flatten: 0.004, // tendency of a moving ring to turn flat-side-down, like a falling coin
   wobble: 0.0015, // small random turning, so rings flutter as they sink
 };
+
+// Hard speed limit (units per step). Thin pegs could otherwise be skipped
+// over by a ring moving further than its own thickness in one step.
+export const MAX_RING_SPEED = 8;

@@ -7,6 +7,7 @@
 // Velocities are in world units per physics step, because our step is always
 // exactly 1/60 s (see loop.js), which is also Matter.js's base step.
 import Matter from 'matter-js';
+import { MAX_RING_SPEED } from './config.js';
 
 const { Body } = Matter;
 
@@ -24,7 +25,9 @@ export function applyWater(rings, p, down = { x: 0, y: 1 }) {
 
     // Drag: a fixed fraction (linear) plus a part that grows with speed (quadratic)
     const speed = Math.hypot(vx, vy);
-    const keep = Math.max(0, 1 - p.linearDrag - p.quadraticDrag * speed);
+    let keep = Math.max(0, 1 - p.linearDrag - p.quadraticDrag * speed);
+    // Hard speed limit so rings can't skip through thin pegs
+    if (speed * keep > MAX_RING_SPEED) keep = MAX_RING_SPEED / speed;
     vx *= keep;
     vy *= keep;
     Body.setVelocity(ring, { x: vx, y: vy });

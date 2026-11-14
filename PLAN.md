@@ -95,6 +95,7 @@ peg's width.
 ### Step 8: Tuning and device testing
 - Test on iPhone Safari and Android Chrome; check performance (steady 60 fps).
 - Tune physics until it's challenging but fair.
+- Revisit speed and physics feel (requested after the Step 6 phone test).
 - **Done when:** it feels good on at least one iPhone and one Android phone.
 
 ---

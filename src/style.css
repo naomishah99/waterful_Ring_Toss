@@ -29,3 +29,71 @@ body {
   pointer-events: none;
   opacity: 0.85;
 }
+
+/* Tuning panel (debug only) */
+.tune-toggle {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: 8px;
+  z-index: 2;
+  padding: 6px 12px;
+  font: 600 13px system-ui, sans-serif;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+.tune-panel {
+  position: fixed;
+  top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+  right: 8px;
+  left: 8px;
+  max-width: 360px;
+  margin-left: auto;
+  max-height: 70dvh;
+  overflow-y: auto;
+  z-index: 2;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 8px;
+  font: 13px system-ui, sans-serif;
+  touch-action: pan-y;
+}
+
+.tune-panel[hidden] {
+  display: none;
+}
+
+.tune-panel label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-bottom: 8px;
+}
+
+.tune-panel input[type='range'] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 4px 0 0;
+}
+
+.tune-panel output {
+  font-family: ui-monospace, monospace;
+  opacity: 0.8;
+}
+
+.tune-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tune-buttons button {
+  flex: 1;
+  padding: 8px;
+  font: 600 13px system-ui, sans-serif;
+  color: #fff;
+  background: #1982c4;
+  border: 0;
+  border-radius: 6px;
+}

@@ -1,12 +1,13 @@
 // Creates the physics world and the tank walls.
 import Matter from 'matter-js';
-import { TANK, PHYSICS } from './config.js';
+import { TANK } from './config.js';
 
 const { Engine, Bodies, Composite } = Matter;
 
 export function createWorld() {
   const engine = Engine.create();
-  engine.gravity.y = PHYSICS.gravity;
+  // Matter's built-in gravity is off: water.js applies gravity and buoyancy itself.
+  engine.gravity.scale = 0;
 
   const t = TANK.wallThickness;
   const { x, y, width: w, height: h } = TANK;

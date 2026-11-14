@@ -1,14 +1,14 @@
 // Plain "debug" drawing: outlines of every physics body plus layout guides.
 // This gets replaced by real visuals in Phase 2.
 import Matter from 'matter-js';
-import { WORLD, TANK, CONTROLS_AREA } from './config.js';
+import { WORLD, TANK, CONTROLS_AREA, RING } from './config.js';
 
 const COLORS = {
   background: '#06202f',
   world: '#0b3d5c',
   tank: '#13557d',
   wall: '#5fa8d3',
-  body: '#ffd166',
+  body: 'rgba(255,255,255,0.5)',
   controls: 'rgba(255,255,255,0.08)',
   text: 'rgba(255,255,255,0.6)',
 };
@@ -32,9 +32,26 @@ export function drawDebug(view, engine) {
   ctx.textAlign = 'center';
   ctx.fillText('buttons go here (Step 4)', WORLD.width / 2, CONTROLS_AREA.y + CONTROLS_AREA.height / 2 + 4);
 
-  // Every physics body, as an outline
-  ctx.lineWidth = 1.5;
+  // Rings: a flattened oval (a ring seen almost edge-on), in the ring's colour
   for (const body of Matter.Composite.allBodies(engine.world)) {
+    if (body.label !== 'ring') continue;
+    ctx.save();
+    ctx.translate(body.position.x, body.position.y);
+    ctx.rotate(body.angle);
+    ctx.strokeStyle = body.render.fillStyle;
+    ctx.lineWidth = RING.rimRadius * 1.6;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, RING.outerRadius - RING.rimRadius, 5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Every physics shape, as a thin outline (compound bodies: each part)
+  ctx.lineWidth = 1;
+  const shapes = Matter.Composite.allBodies(engine.world).flatMap((b) =>
+    b.parts.length > 1 ? b.parts.slice(1) : [b],
+  );
+  for (const body of shapes) {
     ctx.strokeStyle = body.isStatic ? COLORS.wall : COLORS.body;
     ctx.beginPath();
     if (body.circleRadius) {

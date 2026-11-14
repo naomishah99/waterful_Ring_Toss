@@ -18,6 +18,7 @@ const SLIDERS = [
   { key: 'currentDecay', min: 0, max: 0.15, step: 0.005 },
   { key: 'currentSpread', min: 0, max: 0.6, step: 0.02 },
   { key: 'tumble', min: 0, max: 0.1, step: 0.002 },
+  { key: 'tiltAmount', min: 0, max: 2, step: 0.05 },
 ];
 
 function load() {

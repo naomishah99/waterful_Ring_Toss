@@ -3,6 +3,7 @@ import Matter from 'matter-js';
 import { PEGS, RING } from './config.js';
 
 const { Bodies, Composite } = Matter;
+const SLIPPERY = { friction: 0.05, frictionStatic: 0.05 }; // wet plastic
 
 export function createPegs(world) {
   const pegs = PEGS.positions.map(({ x }, index) => {
@@ -10,6 +11,7 @@ export function createPegs(world) {
     const shaft = Bodies.rectangle(x, PEGS.tipY + height / 2, PEGS.width, height, {
       isStatic: true,
       label: 'peg',
+      ...SLIPPERY,
       chamfer: { radius: [PEGS.width / 2, PEGS.width / 2, 0, 0] }, // rounded tip guides rings on
     });
     const stopper = Bodies.rectangle(
@@ -17,7 +19,7 @@ export function createPegs(world) {
       PEGS.baseY + PEGS.stopperHeight / 2,
       PEGS.stopperWidth,
       PEGS.stopperHeight,
-      { isStatic: true, label: 'stopper', chamfer: { radius: 2 } },
+      { isStatic: true, label: 'stopper', chamfer: { radius: 2 }, ...SLIPPERY },
     );
     Composite.add(world, [shaft, stopper]);
     return { index, x, shaft, stopper, rings: new Set() };

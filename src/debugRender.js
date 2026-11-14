@@ -53,7 +53,11 @@ function drawRingBand(ctx, ring, half) {
   ctx.restore();
 }
 
-export function drawDebug(view, engine, { pegs = [], water = null, jets = [], buttons = [] } = {}) {
+export function drawDebug(
+  view,
+  engine,
+  { pegs = [], water = null, jets = [], buttons = [], down = { x: 0, y: 1 } } = {},
+) {
   const { ctx } = view;
   view.clear(COLORS.background); // letterbox bars
   view.applyTransform();
@@ -101,6 +105,25 @@ export function drawDebug(view, engine, { pegs = [], water = null, jets = [], bu
         ctx.lineTo(x + vx * 2, y + vy * 2);
       }
     }
+    ctx.stroke();
+  }
+
+  // "Down" arrow in the middle of the controls area, showing current tilt
+  {
+    const cx = WORLD.width / 2;
+    const cy = CONTROLS_AREA.y + CONTROLS_AREA.height / 2;
+    const len = 22;
+    ctx.strokeStyle = COLORS.charge;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - down.x * len, cy - down.y * len);
+    ctx.lineTo(cx + down.x * len, cy + down.y * len);
+    // arrowhead
+    const hx = cx + down.x * len;
+    const hy = cy + down.y * len;
+    ctx.lineTo(hx - down.x * 7 - down.y * 5, hy - down.y * 7 + down.x * 5);
+    ctx.moveTo(hx, hy);
+    ctx.lineTo(hx - down.x * 7 + down.y * 5, hy - down.y * 7 - down.x * 5);
     ctx.stroke();
   }
 

@@ -7,7 +7,8 @@ const { Bodies, Body, Composite } = Matter;
 
 function createRing(x, y, angle, color) {
   const offset = RING.outerRadius - RING.rimRadius; // centre -> rim centre
-  const rimOptions = { restitution: 0.2, friction: 0.05 };
+  // Underwater plastic: no contact friction (water drag already slows sliding rings)
+  const rimOptions = { restitution: 0.2, friction: 0, frictionStatic: 0 };
   const left = Bodies.circle(x - offset, y, RING.rimRadius, rimOptions);
   const right = Bodies.circle(x + offset, y, RING.rimRadius, rimOptions);
 
@@ -15,7 +16,8 @@ function createRing(x, y, angle, color) {
     parts: [left, right],
     label: 'ring',
     restitution: 0.2,
-    friction: 0.05,
+    friction: 0,
+    frictionStatic: 0,
     frictionAir: 0, // the water module handles all drag
   });
   Body.setAngle(ring, angle);

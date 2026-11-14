@@ -11,7 +11,8 @@ export function createWorld() {
 
   const t = TANK.wallThickness;
   const { x, y, width: w, height: h } = TANK;
-  const wallOptions = { isStatic: true, label: 'wall' };
+  // Slippery like wet plastic (Matter uses the stickier of two touching bodies)
+  const wallOptions = { isStatic: true, label: 'wall', friction: 0.05, frictionStatic: 0.05 };
 
   // Each wall sits just outside the tank's inner edge.
   const walls = [

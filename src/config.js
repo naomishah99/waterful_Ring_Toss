@@ -66,6 +66,8 @@ export const WATER_DEFAULTS = {
   currentDecay: 0.025, // how quickly stirred-up water calms down
   currentSpread: 0.1, // how much moving water drags its neighbours along
   tumble: 0.02, // how much uneven currents spin a ring
+  // Tilt (Step 5)
+  tiltAmount: 1, // 1 = real tilt; higher exaggerates it, 0 turns it off
 };
 
 // Water jet nozzles on the tank floor, and the pump that drives each one.

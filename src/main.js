@@ -1,4 +1,4 @@
-// Step 5: tilt.
+// Step 6: shake.
 import Matter from 'matter-js';
 import { RING } from './config.js';
 import { createView } from './view.js';
@@ -10,6 +10,7 @@ import { createWater } from './water.js';
 import { createJets } from './jets.js';
 import { setupControls, buttonLayout } from './controls.js';
 import { createTilt } from './tilt.js';
+import { createShake } from './shake.js';
 import { showStartScreen } from './startScreen.js';
 import { createPegs, updateScoring, totalScored, resetScoring } from './pegs.js';
 import { createTuningPanel } from './tuningPanel.js';
@@ -24,6 +25,7 @@ const pegs = createPegs(engine.world);
 const water = createWater();
 const jets = createJets();
 const tilt = createTilt();
+const shake = createShake();
 let rings = spawnRings(engine.world);
 
 setupControls({ canvas, view, jets });
@@ -39,13 +41,20 @@ const tuning = createTuningPanel({
   'Re-level': () => tilt.relevel(),
 });
 
-showStartScreen(() => tilt.enable());
+showStartScreen(async () => {
+  const source = await tilt.enable();
+  if (source === 'sensor') shake.start();
+});
 
 startLoop({
   update(dt) {
     tilt.state.amount = tuning.tiltAmount;
     tilt.update(dt / 1000);
     jets.update(dt / 1000);
+    const jolt = shake.take();
+    if (jolt.strength > 0) {
+      water.shake(jolt.x * tuning.shakeStrength, jolt.y * tuning.shakeStrength, jolt.strength * tuning.shakeSwirl);
+    }
     water.step(tuning, jets.jets);
     water.applyToRings(rings, tuning, tilt.down());
     Matter.Engine.update(engine, dt);
@@ -57,9 +66,10 @@ startLoop({
     const tiltHelp = tilt.state.source === 'keys' ? '(arrow keys)' : '';
     status.textContent =
       `fps ${stats.fps}   scored ${totalScored(pegs)} / ${RING.count}\n` +
-      `tilt ${tiltDeg}° ${tilt.state.source} ${tiltHelp}`;
+      `tilt ${tiltDeg}° ${tilt.state.source} ${tiltHelp}\n` +
+      `shakes ${shake.state.count} ${shake.state.level > 0 ? '~' : ''} ${tilt.state.source === 'keys' ? '(space)' : ''}`;
   },
 });
 
 // Exposed for testing from the browser console
-window.game = { engine, pegs, water, jets, tilt, get rings() { return rings; } };
+window.game = { engine, pegs, water, jets, tilt, shake, get rings() { return rings; } };

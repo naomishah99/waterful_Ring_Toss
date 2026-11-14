@@ -157,6 +157,36 @@ export function createWater() {
     }
   }
 
+  // Shake: push all the water by (vx, vy), plus random swirls whose size
+  // grows with `swirl`. Swirls make a shake stir things up instead of just
+  // sliding everything one way.
+  function shake(vx, vy, swirl) {
+    for (let k = 0; k < n; k++) {
+      ux[k] += vx;
+      uy[k] += vy;
+    }
+    if (swirl <= 0) return;
+    const SWIRLS = 3;
+    const RADIUS = 80;
+    for (let s = 0; s < SWIRLS; s++) {
+      const cx = TANK.x + Math.random() * TANK.width;
+      const cy = TANK.y + Math.random() * TANK.height;
+      const spin = (Math.random() < 0.5 ? -1 : 1) * swirl;
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          const dx = TANK.x + (i + 0.5) * CELL - cx;
+          const dy = TANK.y + (j + 0.5) * CELL - cy;
+          const d = Math.hypot(dx, dy);
+          if (d > RADIUS || d < 1) continue;
+          const f = (spin * (1 - d / RADIUS)) / d;
+          const k = idx(i, j);
+          ux[k] += -dy * f;
+          uy[k] += dx * f;
+        }
+      }
+    }
+  }
+
   function reset() {
     ux.fill(0);
     uy.fill(0);
@@ -169,6 +199,7 @@ export function createWater() {
     sample,
     step,
     applyToRings,
+    shake,
     reset,
     get ux() { return ux; },
     get uy() { return uy; },

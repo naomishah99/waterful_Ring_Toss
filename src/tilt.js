@@ -9,6 +9,8 @@
 //
 // On a laptop (no sensor), hold the left / right arrow keys to tilt.
 
+import { deviceToScreen } from './sensors.js';
+
 const SMOOTHING = 0.15; // 0..1 per reading: lower = smoother but laggier
 const MIN_READING = 1.5; // m/s². Below this, the phone is too flat to tell direction
 const CALIBRATION_SAMPLES = 15; // readings averaged to find "level"
@@ -38,25 +40,14 @@ export function createTilt() {
   let keyTarget = 0;
   const keysDown = new Set();
 
-  function screenRotation() {
-    const deg = screen.orientation?.angle ?? window.orientation ?? 0;
-    return (deg * Math.PI) / 180;
-  }
-
   function onMotion(e) {
     const a = e.accelerationIncludingGravity;
     if (!a || a.x == null || a.y == null) return;
     state.source = 'sensor';
 
-    // The sensor reports the push *against* gravity in device axes (y = up the
-    // screen). Flip it to get gravity, rotate for screen orientation, then
-    // convert to screen coords where y points down.
-    const gx = -a.x;
-    const gy = -a.y;
-    const r = screenRotation();
-    const sx = gx * Math.cos(r) - gy * Math.sin(r);
-    const syUp = gx * Math.sin(r) + gy * Math.cos(r);
-    const v = { x: sx, y: -syUp };
+    // The sensor reports the push *against* gravity, so flip it to get gravity,
+    // then convert to screen axes.
+    const v = deviceToScreen(-a.x, -a.y);
 
     smooth = smooth
       ? { x: smooth.x + (v.x - smooth.x) * SMOOTHING, y: smooth.y + (v.y - smooth.y) * SMOOTHING }

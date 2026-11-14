@@ -68,6 +68,9 @@ export const WATER_DEFAULTS = {
   tumble: 0.02, // how much uneven currents spin a ring
   // Tilt (Step 5)
   tiltAmount: 1, // 1 = real tilt; higher exaggerates it, 0 turns it off
+  // Shake (Step 6)
+  shakeStrength: 8, // how hard a shake pushes the water
+  shakeSwirl: 4, // how much a shake stirs up random swirls
 };
 
 // Water jet nozzles on the tank floor, and the pump that drives each one.

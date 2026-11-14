@@ -1,0 +1,31 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b3d5c;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  /* Stop scrolling, pull-to-refresh, double-tap zoom and text selection while playing */
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100dvh;
+}
+
+#status {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 8px;
+  font: 12px/1.4 ui-monospace, monospace;
+  white-space: pre;
+  pointer-events: none;
+  opacity: 0.85;
+}

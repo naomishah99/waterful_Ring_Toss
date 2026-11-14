@@ -6,6 +6,7 @@ export function showStartScreen(onStart) {
   overlay.innerHTML = `
     <button class="start-button" type="button">Tap to start</button>
     <p>Hold your phone the way you want to play.<br />That position counts as level.</p>
+    <p>Get every ring onto a peg. The clock starts on your first button press.</p>
   `;
   document.body.append(overlay);
 
@@ -13,6 +14,7 @@ export function showStartScreen(onStart) {
     'click',
     async () => {
       overlay.querySelector('p').textContent = 'Starting…';
+      overlay.querySelectorAll('p')[1]?.remove();
       await onStart();
       overlay.remove();
     },

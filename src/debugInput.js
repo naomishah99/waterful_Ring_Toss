@@ -1,4 +1,4 @@
-// Debug touch controls, for testing before the real buttons exist:
+// Debug touch controls (only while debug mode is on, so they can't be used to cheat):
 //   - press on a ring and drag: the ring follows your finger on a springy line
 //   - tap empty water: pushes nearby rings away ("poke")
 import Matter from 'matter-js';
@@ -16,8 +16,10 @@ function inTank(p) {
 
 export function setupDebugInput({ canvas, view, engine, getRings }) {
   const drags = new Map(); // pointerId -> constraint (one per finger)
+  let enabled = false;
 
   canvas.addEventListener('pointerdown', (e) => {
+    if (!enabled) return;
     const p = view.toWorld(e.clientX, e.clientY);
     if (!inTank(p)) return;
 
@@ -72,7 +74,14 @@ export function setupDebugInput({ canvas, view, engine, getRings }) {
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
 
-  return {
+  const api = {
+    get enabled() {
+      return enabled;
+    },
+    set enabled(value) {
+      enabled = value;
+      if (!value) api.releaseAll();
+    },
     // Drop any grabs (e.g. when the rings are replaced)
     releaseAll() {
       for (const c of drags.values()) Composite.remove(engine.world, c);
@@ -80,6 +89,7 @@ export function setupDebugInput({ canvas, view, engine, getRings }) {
     },
     drags,
   };
+  return api;
 }
 
 function poke(rings, p) {

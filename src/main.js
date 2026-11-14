@@ -1,4 +1,4 @@
-// Step 6: shake.
+// Step 7: game rules (rings start on the floor, timer, presses, win, restart).
 import Matter from 'matter-js';
 import { RING } from './config.js';
 import { createView } from './view.js';
@@ -13,6 +13,8 @@ import { createTilt } from './tilt.js';
 import { createShake } from './shake.js';
 import { showStartScreen } from './startScreen.js';
 import { createPegs, updateScoring, totalScored, resetScoring } from './pegs.js';
+import { createGame } from './game.js';
+import { createHud } from './hud.js';
 import { createTuningPanel } from './tuningPanel.js';
 import { setupDebugInput } from './debugInput.js';
 
@@ -29,16 +31,30 @@ const shake = createShake();
 let rings = spawnRings(engine.world);
 
 setupControls({ canvas, view, jets });
-const input = setupDebugInput({ canvas, view, engine, getRings: () => rings });
+const debugInput = setupDebugInput({ canvas, view, engine, getRings: () => rings });
+
+const hud = createHud({ onRestart: () => newRound('floor') });
+const game = createGame({ ringCount: RING.count, onWin: (result) => hud.showWin(result) });
+
+// Start a fresh round with the rings placed by `mode` ('floor' or 'scatter')
+function newRound(mode) {
+  debugInput.releaseAll();
+  resetScoring(pegs);
+  water.reset();
+  jets.reset();
+  rings = spawnRings(engine.world, rings, mode);
+  game.reset(jets.pressCount);
+  hud.hideWin();
+}
 
 const tuning = createTuningPanel({
-  'Drop rings': () => {
-    input.releaseAll();
-    resetScoring(pegs);
-    water.reset();
-    rings = spawnRings(engine.world, rings);
-  },
+  'Drop rings from top': () => newRound('scatter'),
   'Re-level': () => tilt.relevel(),
+  'Debug: off': (e) => {
+    debugInput.enabled = !debugInput.enabled;
+    e.currentTarget.textContent = `Debug: ${debugInput.enabled ? 'on' : 'off'}`;
+    status.classList.toggle('debug-on', debugInput.enabled);
+  },
 });
 
 showStartScreen(async () => {
@@ -59,17 +75,22 @@ startLoop({
     water.applyToRings(rings, tuning, tilt.down());
     Matter.Engine.update(engine, dt);
     updateScoring(rings, pegs);
+    game.update(dt / 1000, jets.pressCount, totalScored(pegs));
   },
   render(stats) {
     drawDebug(view, engine, { pegs, water, jets: jets.jets, buttons: buttonLayout, down: tilt.down() });
-    const tiltDeg = Math.round((tilt.state.angle * 180) / Math.PI);
-    const tiltHelp = tilt.state.source === 'keys' ? '(arrow keys)' : '';
-    status.textContent =
-      `fps ${stats.fps}   scored ${totalScored(pegs)} / ${RING.count}\n` +
-      `tilt ${tiltDeg}° ${tilt.state.source} ${tiltHelp}\n` +
-      `shakes ${shake.state.count} ${shake.state.level > 0 ? '~' : ''} ${tilt.state.source === 'keys' ? '(space)' : ''}`;
+    hud.update(game, totalScored(pegs), RING.count);
+    if (debugInput.enabled) {
+      const tiltDeg = Math.round((tilt.state.angle * 180) / Math.PI);
+      const keysHelp = tilt.state.source === 'keys' ? ' (arrows, space)' : '';
+      status.textContent =
+        `fps ${stats.fps}  ${game.state.phase}\n` +
+        `tilt ${tiltDeg}° ${tilt.state.source}${keysHelp}\n` +
+        `shakes ${shake.state.count} ${shake.state.level > 0 ? '~' : ''}\n` +
+        `drag rings, or tap water to poke`;
+    }
   },
 });
 
 // Exposed for testing from the browser console
-window.game = { engine, pegs, water, jets, tilt, shake, get rings() { return rings; } };
+window.game = { Matter, engine, pegs, water, jets, tilt, shake, game, debugInput, get rings() { return rings; } };

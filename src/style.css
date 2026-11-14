@@ -22,7 +22,7 @@ body {
 
 #status {
   position: fixed;
-  top: max(8px, env(safe-area-inset-top));
+  top: calc(max(8px, env(safe-area-inset-top)) + 40px);
   left: 8px;
   font: 12px/1.4 ui-monospace, monospace;
   white-space: pre;
@@ -128,4 +128,73 @@ body {
   font-size: 14px;
   line-height: 1.4;
   opacity: 0.8;
+}
+
+#status:not(.debug-on) {
+  display: none;
+}
+
+/* HUD: time, presses, score */
+.hud {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  font: 600 12px system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.restart-button {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 8px;
+  z-index: 2;
+  padding: 6px 12px;
+  font: 600 13px system-ui, sans-serif;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+/* Win screen */
+.win-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+  background: rgba(6, 32, 47, 0.85);
+}
+
+.win-screen h2 {
+  margin: 0;
+  font: 800 28px system-ui, sans-serif;
+}
+
+.win-screen p {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+/* Narrow phones: keep Restart, HUD and Tune from overlapping */
+@media (max-width: 360px) {
+  .hud {
+    padding: 6px;
+    font-size: 11px;
+  }
+  .restart-button,
+  .tune-toggle {
+    padding: 6px 8px;
+  }
 }

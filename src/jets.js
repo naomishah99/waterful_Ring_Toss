@@ -16,12 +16,14 @@ export function createJets() {
     power: 0, // current jet output (0..1), read by the water
   }));
 
-  return {
+  const api = {
     jets,
+    pressCount: 0, // total button presses, for the game's press counter
 
     press(i) {
       const jet = jets[i];
       if (!jet || jet.held) return;
+      api.pressCount++;
       jet.held = true;
       jet.strokePower = jet.charge;
       jet.charge = 0;
@@ -53,4 +55,5 @@ export function createJets() {
       for (const jet of jets) Object.assign(jet, { held: false, charge: 1, power: 0 });
     },
   };
+  return api;
 }

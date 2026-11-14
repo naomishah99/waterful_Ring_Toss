@@ -2,7 +2,7 @@
 // can tune the feel on a real phone. Values are remembered on this device.
 import { WATER_DEFAULTS } from './config.js';
 
-const STORAGE_KEY = 'ringtoss.water';
+const STORAGE_KEY = 'ringtoss.water.v2'; // v2: drag now works relative to the water, so old saved values don't apply
 
 const SLIDERS = [
   { key: 'gravity', min: 0, max: 0.8, step: 0.01 },
@@ -12,6 +12,12 @@ const SLIDERS = [
   { key: 'angularDrag', min: 0, max: 0.3, step: 0.005 },
   { key: 'flatten', min: 0, max: 0.02, step: 0.0005 },
   { key: 'wobble', min: 0, max: 0.01, step: 0.0005 },
+  { key: 'jetSpeed', min: 0, max: 25, step: 0.5 },
+  { key: 'jetReach', min: 100, max: 600, step: 10 },
+  { key: 'jetSpread', min: 5, max: 60, step: 1 },
+  { key: 'currentDecay', min: 0, max: 0.15, step: 0.005 },
+  { key: 'currentSpread', min: 0, max: 0.6, step: 0.02 },
+  { key: 'tumble', min: 0, max: 0.1, step: 0.002 },
 ];
 
 function load() {

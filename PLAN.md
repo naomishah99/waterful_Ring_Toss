@@ -74,7 +74,8 @@ peg's width.
 
 ### Step 4: Buttons and water jets
 - Left and right on-screen buttons (multi-touch, both at once).
-- Hold to build pressure, release to fire; jet force cone + current field.
+- Each press is one pump stroke (a burst that fades even if held); letting go
+  refills the pump, so rhythmic pressing works best. Jet cone + current field.
 - **Done when:** you can push rings up and over to pegs with button presses alone.
 
 ### Step 5: Tilt

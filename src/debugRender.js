@@ -13,7 +13,10 @@ const COLORS = {
   scored: '#ffffff',
   drag: 'rgba(255,255,255,0.7)',
   controls: 'rgba(255,255,255,0.08)',
-  text: 'rgba(255,255,255,0.6)',
+  button: '#e94f37',
+  buttonDown: '#a8321f',
+  charge: 'rgba(255,255,255,0.7)',
+  current: 'rgba(170,220,255,0.55)',
 };
 
 function fillShape(ctx, body) {
@@ -50,7 +53,7 @@ function drawRingBand(ctx, ring, half) {
   ctx.restore();
 }
 
-export function drawDebug(view, engine, pegs = []) {
+export function drawDebug(view, engine, { pegs = [], water = null, jets = [], buttons = [] } = {}) {
   const { ctx } = view;
   view.clear(COLORS.background); // letterbox bars
   view.applyTransform();
@@ -61,13 +64,49 @@ export function drawDebug(view, engine, pegs = []) {
   ctx.fillStyle = COLORS.tank;
   ctx.fillRect(TANK.x, TANK.y, TANK.width, TANK.height);
 
-  // Placeholder for where the jet buttons will go
+  // Controls area and buttons
   ctx.fillStyle = COLORS.controls;
   ctx.fillRect(TANK.x, CONTROLS_AREA.y, TANK.width, CONTROLS_AREA.height);
-  ctx.fillStyle = COLORS.text;
-  ctx.font = '12px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('buttons go here (Step 4)', WORLD.width / 2, CONTROLS_AREA.y + CONTROLS_AREA.height / 2 + 4);
+  buttons.forEach((b, i) => {
+    const jet = jets[i];
+    ctx.fillStyle = jet?.held ? COLORS.buttonDown : COLORS.button;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, jet?.held ? b.radius * 0.92 : b.radius, 0, Math.PI * 2);
+    ctx.fill();
+    // Pump refill shown as an arc around the button
+    if (jet) {
+      ctx.strokeStyle = COLORS.charge;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius + 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * jet.charge);
+      ctx.stroke();
+    }
+  });
+
+  // Water currents as faint arrows
+  if (water) {
+    ctx.strokeStyle = COLORS.current;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let j = 0; j < water.rows; j++) {
+      for (let i = 0; i < water.cols; i++) {
+        const k = j * water.cols + i;
+        const vx = water.ux[k];
+        const vy = water.uy[k];
+        if (vx * vx + vy * vy < 0.04) continue;
+        const x = TANK.x + (i + 0.5) * water.cell;
+        const y = TANK.y + (j + 0.5) * water.cell;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + vx * 2, y + vy * 2);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Nozzles on the tank floor
+  ctx.fillStyle = COLORS.peg;
+  for (const jet of jets) ctx.fillRect(jet.x - 8, TANK.y + TANK.height - 6, 16, 6);
 
   const bodies = Matter.Composite.allBodies(engine.world);
   const rings = bodies.filter((b) => b.label === 'ring');

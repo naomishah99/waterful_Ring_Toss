@@ -53,12 +53,35 @@ export const PEGS = {
 // These are the starting values; the tuning panel can change them live.
 export const WATER_DEFAULTS = {
   gravity: 0.28, // pull downward (same as normal air gravity)
-  buoyancy: 0.8, // fraction of gravity the water cancels out (1 = floats in place)
-  linearDrag: 0.03, // slows everything a little each step: sets the slow sinking speed
+  buoyancy: 0.6, // fraction of gravity the water cancels out (1 = floats in place)
+  linearDrag: 0.08, // slows everything a little each step: sets the slow sinking speed
   quadraticDrag: 0.008, // slows fast things a lot more: tames hard jets and shakes
   angularDrag: 0.06, // slows spinning
   flatten: 0.004, // tendency of a moving ring to turn flat-side-down, like a falling coin
   wobble: 0.0015, // small random turning, so rings flutter as they sink
+  // Jets and currents (Step 4)
+  jetSpeed: 22, // water speed right at a nozzle during a full pump stroke
+  jetReach: 380, // how far up the jet reaches
+  jetSpread: 28, // half-width of the jet cone, in degrees
+  currentDecay: 0.025, // how quickly stirred-up water calms down
+  currentSpread: 0.1, // how much moving water drags its neighbours along
+  tumble: 0.02, // how much uneven currents spin a ring
+};
+
+// Water jet nozzles on the tank floor, and the pump that drives each one.
+// Like the toy: each press is one pump stroke (a burst that fades); the pump
+// refills while the button is up, so rhythmic pressing works best.
+export const JETS = {
+  nozzles: [{ x: 98 }, { x: 262 }],
+  strokeRise: 0.05, // seconds for a stroke to reach full power
+  strokeFade: 0.3, // seconds for a stroke to fade (keeps fading while held)
+  refillTime: 0.4, // seconds with the button up to fully refill the pump
+};
+
+// On-screen buttons, one per nozzle, in the area under the tank
+export const BUTTONS = {
+  radius: 34,
+  hitRadius: 50, // a little forgiving for thumbs
 };
 
 // Hard speed limit (units per step). Thin pegs could otherwise be skipped

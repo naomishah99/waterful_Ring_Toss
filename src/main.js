@@ -1,10 +1,13 @@
-// Step 8: tuning. Game rules from Step 7; debug tools only with ?debug in the URL.
+// Step 9: visual design. Debug tools only with ?debug in the URL.
 import Matter from 'matter-js';
+import '@fontsource/vt323';
 import { RING } from './config.js';
 import { createView } from './view.js';
 import { createWorld } from './world.js';
 import { startLoop } from './loop.js';
+import { drawScene } from './render.js';
 import { drawDebug } from './debugRender.js';
+import { createBubbles } from './bubbles.js';
 import { spawnRings } from './rings.js';
 import { createWater } from './water.js';
 import { createJets } from './jets.js';
@@ -28,6 +31,7 @@ const water = createWater();
 const jets = createJets();
 const tilt = createTilt();
 const shake = createShake();
+const bubbles = createBubbles();
 let rings = spawnRings(engine.world);
 
 setupControls({ canvas, view, jets });
@@ -42,6 +46,7 @@ function newRound(mode) {
   resetScoring(pegs);
   water.reset();
   jets.reset();
+  bubbles.reset();
   rings = spawnRings(engine.world, rings, mode);
   game.reset(jets.pressCount);
   hud.hideWin();
@@ -76,15 +81,18 @@ startLoop({
     const jolt = shake.take();
     if (jolt.strength > 0) {
       water.shake(jolt.x * tuning.shakeStrength, jolt.y * tuning.shakeStrength, jolt.strength * tuning.shakeSwirl);
+      bubbles.burst(jolt.strength);
     }
     water.step(tuning, jets.jets);
     water.applyToRings(rings, tuning, tilt.down());
+    bubbles.step(jets.jets, water);
     Matter.Engine.update(engine, dt);
     updateScoring(rings, pegs);
     game.update(dt / 1000, jets.pressCount, totalScored(pegs));
   },
   render(stats) {
-    drawDebug(view, engine, { pegs, water, jets: jets.jets, buttons: buttonLayout, down: tilt.down() });
+    drawScene(view, engine, { pegs, jets: jets.jets, buttons: buttonLayout, bubbles: bubbles.list, down: tilt.down() });
+    if (debugInput.enabled) drawDebug(view, engine, { water });
     hud.update(game, totalScored(pegs), RING.count);
     if (debugInput.enabled) {
       const tiltDeg = Math.round((tilt.state.angle * 180) / Math.PI);
@@ -99,4 +107,4 @@ startLoop({
 });
 
 // Exposed for testing from the browser console
-window.game = { Matter, engine, pegs, water, jets, tilt, shake, game, debugInput, get rings() { return rings; } };
+window.game = { Matter, engine, pegs, water, jets, tilt, shake, bubbles, game, debugInput, get rings() { return rings; } };

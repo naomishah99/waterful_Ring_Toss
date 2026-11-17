@@ -1,155 +1,35 @@
-// Plain "debug" drawing: outlines of every physics body plus layout guides.
-// This gets replaced by real visuals in Phase 2.
+// Debug overlay (only with ?debug and Debug: on): water currents, the outline
+// of every physics shape, and finger-drag lines, drawn on top of the scene.
 import Matter from 'matter-js';
-import { WORLD, TANK, CONTROLS_AREA, RING, PEGS } from './config.js';
+import { TANK } from './config.js';
 
-const COLORS = {
-  background: '#06202f',
-  world: '#0b3d5c',
-  tank: '#13557d',
-  wall: '#5fa8d3',
-  peg: '#e0e6ea',
-  outline: 'rgba(255,255,255,0.5)',
-  scored: '#ffffff',
-  drag: 'rgba(255,255,255,0.7)',
-  controls: 'rgba(255,255,255,0.08)',
-  button: '#e94f37',
-  buttonDown: '#a8321f',
-  charge: 'rgba(255,255,255,0.7)',
-  current: 'rgba(170,220,255,0.55)',
-};
-
-function fillShape(ctx, body) {
-  const v = body.vertices;
-  ctx.beginPath();
-  ctx.moveTo(v[0].x, v[0].y);
-  for (let i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y);
-  ctx.closePath();
-  ctx.fill();
-}
-
-// The ring band as a flattened oval (a ring seen almost edge-on).
-// `half` draws only the back ('back') or front ('front') half, so a peg can be
-// drawn in between and look like it goes through the ring.
-function drawRingBand(ctx, ring, half) {
-  ctx.save();
-  ctx.translate(ring.position.x, ring.position.y);
-  ctx.rotate(ring.angle);
-  ctx.strokeStyle = ring.render.fillStyle;
-  ctx.lineWidth = RING.rimRadius * 1.6;
-  ctx.beginPath();
-  const rx = RING.outerRadius - RING.rimRadius;
-  if (half === 'back') ctx.ellipse(0, 0, rx, 5, 0, Math.PI, Math.PI * 2);
-  else ctx.ellipse(0, 0, rx, 5, 0, 0, Math.PI);
-  ctx.stroke();
-  // white outline on rings that are scored
-  if (ring.plugin.scoring?.onPeg && half === 'front') {
-    ctx.strokeStyle = COLORS.scored;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rx + RING.rimRadius, 5 + RING.rimRadius, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-export function drawDebug(
-  view,
-  engine,
-  { pegs = [], water = null, jets = [], buttons = [], down = { x: 0, y: 1 } } = {},
-) {
+export function drawDebug(view, engine, { water }) {
   const { ctx } = view;
-  view.clear(COLORS.background); // letterbox bars
   view.applyTransform();
 
-  // World area and tank water
-  ctx.fillStyle = COLORS.world;
-  ctx.fillRect(0, 0, WORLD.width, WORLD.height);
-  ctx.fillStyle = COLORS.tank;
-  ctx.fillRect(TANK.x, TANK.y, TANK.width, TANK.height);
-
-  // Controls area and buttons
-  ctx.fillStyle = COLORS.controls;
-  ctx.fillRect(TANK.x, CONTROLS_AREA.y, TANK.width, CONTROLS_AREA.height);
-  ctx.textAlign = 'center';
-  buttons.forEach((b, i) => {
-    const jet = jets[i];
-    ctx.fillStyle = jet?.held ? COLORS.buttonDown : COLORS.button;
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, jet?.held ? b.radius * 0.92 : b.radius, 0, Math.PI * 2);
-    ctx.fill();
-    // Pump refill shown as an arc around the button
-    if (jet) {
-      ctx.strokeStyle = COLORS.charge;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.radius + 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * jet.charge);
-      ctx.stroke();
-    }
-  });
-
   // Water currents as faint arrows
-  if (water) {
-    ctx.strokeStyle = COLORS.current;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let j = 0; j < water.rows; j++) {
-      for (let i = 0; i < water.cols; i++) {
-        const k = j * water.cols + i;
-        const vx = water.ux[k];
-        const vy = water.uy[k];
-        if (vx * vx + vy * vy < 0.04) continue;
-        const x = TANK.x + (i + 0.5) * water.cell;
-        const y = TANK.y + (j + 0.5) * water.cell;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + vx * 2, y + vy * 2);
-      }
-    }
-    ctx.stroke();
-  }
-
-  // "Down" arrow in the middle of the controls area, showing current tilt
-  {
-    const cx = WORLD.width / 2;
-    const cy = CONTROLS_AREA.y + CONTROLS_AREA.height / 2;
-    const len = 22;
-    ctx.strokeStyle = COLORS.charge;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - down.x * len, cy - down.y * len);
-    ctx.lineTo(cx + down.x * len, cy + down.y * len);
-    // arrowhead
-    const hx = cx + down.x * len;
-    const hy = cy + down.y * len;
-    ctx.lineTo(hx - down.x * 7 - down.y * 5, hy - down.y * 7 + down.x * 5);
-    ctx.moveTo(hx, hy);
-    ctx.lineTo(hx - down.x * 7 + down.y * 5, hy - down.y * 7 - down.x * 5);
-    ctx.stroke();
-  }
-
-  // Nozzles on the tank floor
-  ctx.fillStyle = COLORS.peg;
-  for (const jet of jets) ctx.fillRect(jet.x - 8, TANK.y + TANK.height - 6, 16, 6);
-
-  const bodies = Matter.Composite.allBodies(engine.world);
-  const rings = bodies.filter((b) => b.label === 'ring');
-
-  // Back halves of rings, then pegs, then front halves: pegs look threaded
-  for (const ring of rings) drawRingBand(ctx, ring, 'back');
-  ctx.fillStyle = COLORS.peg;
-  for (const b of bodies) if (b.label === 'peg' || b.label === 'stopper') fillShape(ctx, b);
-  for (const ring of rings) drawRingBand(ctx, ring, 'front');
-
-  // Score above each peg
-  ctx.fillStyle = COLORS.scored;
-  ctx.font = '600 14px system-ui, sans-serif';
-  for (const peg of pegs) ctx.fillText(String(peg.rings.size), peg.x, PEGS.tipY - 12);
-
-  // Every physics shape, as a thin outline (compound bodies: each part)
+  ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
   ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let j = 0; j < water.rows; j++) {
+    for (let i = 0; i < water.cols; i++) {
+      const k = j * water.cols + i;
+      const vx = water.ux[k];
+      const vy = water.uy[k];
+      if (vx * vx + vy * vy < 0.04) continue;
+      const x = TANK.x + (i + 0.5) * water.cell;
+      const y = TANK.y + (j + 0.5) * water.cell;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + vx * 2, y + vy * 2);
+    }
+  }
+  ctx.stroke();
+
+  // Every physics shape (compound bodies: each part)
+  const bodies = Matter.Composite.allBodies(engine.world);
   const shapes = bodies.flatMap((b) => (b.parts.length > 1 ? b.parts.slice(1) : [b]));
   for (const body of shapes) {
-    ctx.strokeStyle = body.isStatic ? COLORS.wall : COLORS.outline;
+    ctx.strokeStyle = body.isStatic ? 'rgba(255, 0, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
     ctx.beginPath();
     if (body.circleRadius) {
       ctx.arc(body.position.x, body.position.y, body.circleRadius, 0, Math.PI * 2);
@@ -163,7 +43,7 @@ export function drawDebug(
   }
 
   // Finger-drag lines
-  ctx.strokeStyle = COLORS.drag;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
   ctx.setLineDash([4, 4]);
   for (const c of Matter.Composite.allConstraints(engine.world)) {
     const b = Matter.Constraint.pointBWorld(c);
